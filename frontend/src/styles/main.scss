@@ -1,0 +1,299 @@
+// ========================================
+// 神都洛阳 · 盛唐风华 — 全局设计系统
+// ========================================
+
+:root {
+  // 色彩系统
+  --palace-red: #7A1A2E;      // 宫墙深红 - 主色
+  --palace-red-light: #9B2E42; // 浅宫墙红
+  --palace-red-dark: #5A0F1F;  // 深宫墙红
+  --gold: #C8A45C;             // 鎏金 - 辅助色
+  --gold-light: #E8D5A3;       // 浅缃金
+  --gold-dark: #A8883C;        // 深鎏金
+  --teal: #6B9B8A;            // 青瓷绿 - 点缀
+  --ink: #1A1A1A;              // 墨色 - 文字
+  --ink-light: #5A5A5A;        // 浅墨
+  --ivory: #F5F0E8;            // 牙白 - 背景主色
+  --silk-gold: #E8D8B0;       // 缃叶 - 暖金背景
+  --celadon: #D4E8D8;         // 水绿
+
+  // 字体
+  --font-display: 'Ma Shan Zheng', 'ZCOOL XiaoWei', 'KaiTi', serif;
+  --font-body: 'Noto Serif SC', 'STSong', 'SimSun', serif;
+
+  // 阴影
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
+  --shadow-gold: 0 4px 20px rgba(200, 164, 92, 0.3);
+
+  // 圆角
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  // 间距
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+}
+
+// === 全局重置 ===
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #app {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background-color: var(--ivory);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  // 宣纸纹理背景
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(200, 164, 92, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 50%, rgba(200, 164, 92, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 0%, rgba(122, 26, 46, 0.02) 0%, transparent 50%);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+// === 滚动条 ===
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, var(--gold), var(--gold-dark));
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-dark);
+}
+
+// === 动画 ===
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 4px rgba(200, 164, 92, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(200, 164, 92, 0.6); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.fade-in { animation: fadeIn 0.6s ease-out both; }
+.slide-up { animation: slideUp 0.5s ease-out both; }
+.scale-in { animation: scaleIn 0.4s ease-out both; }
+.glow { animation: glow 2s ease-in-out infinite; }
+
+// === Element Plus 主题覆盖 ===
+
+// 按钮
+.el-button {
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-weight: 500;
+  border: 1px solid var(--gold);
+
+  &--primary {
+    background: linear-gradient(135deg, var(--palace-red-light), var(--palace-red));
+    border-color: var(--gold);
+    color: #fff;
+
+    &:hover {
+      background: linear-gradient(135deg, var(--palace-red), var(--palace-red-dark));
+      box-shadow: var(--shadow-gold);
+    }
+  }
+}
+
+// 输入框
+.el-input__wrapper {
+  background-color: #fff;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+
+  &:hover {
+    box-shadow: 0 0 0 1px var(--gold);
+  }
+
+  &.is-focus {
+    box-shadow: 0 0 0 1px var(--gold), 0 0 0 3px rgba(200, 164, 92, 0.15);
+  }
+}
+
+// 表格
+.el-table {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+
+  th.el-table__cell {
+    background: var(--palace-red) !important;
+    color: #fff;
+    font-weight: 600;
+    font-family: var(--font-body);
+  }
+
+  .el-table__row {
+    &:nth-child(odd) td {
+      background: var(--ivory);
+    }
+    &:nth-child(even) td {
+      background: var(--silk-gold);
+    }
+    &:hover td {
+      background: #f0ead8 !important;
+    }
+  }
+
+  td {
+    border-bottom: none;
+  }
+}
+
+// 标签页
+.el-tabs {
+  .el-tabs__item {
+    font-family: var(--font-body);
+    font-size: 14px;
+    border-radius: var(--radius-sm);
+
+    &.is-active {
+      background: var(--palace-red);
+      color: #fff !important;
+    }
+  }
+
+  .el-tabs__nav-wrap::after {
+    display: none;
+  }
+
+  .el-tabs__active-bar {
+    background: var(--gold);
+    height: 3px;
+  }
+}
+
+// 对话框
+.el-dialog {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+
+  .el-dialog__header {
+    border-bottom: 1px solid var(--gold-light);
+    padding: var(--space-lg);
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 10%;
+      width: 80%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+  }
+
+  .el-dialog__body {
+    padding: var(--space-lg);
+  }
+
+  .el-dialog__footer {
+    padding: var(--space-md) var(--space-lg);
+    border-top: 1px solid rgba(0,0,0,0.05);
+  }
+}
+
+// 标签
+.el-tag {
+  border: 1px solid var(--gold);
+  background: #fff;
+  color: var(--palace-red);
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  padding: 2px 8px;
+}
+
+// 分页
+.el-pagination {
+  font-family: var(--font-body);
+
+  .el-pager li {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--gold-light);
+    background: #fff;
+    color: var(--ink);
+    margin: 0 2px;
+
+    &.active {
+      background: var(--palace-red);
+      border-color: var(--palace-red);
+      color: #fff;
+    }
+
+    &:hover:not(.active) {
+      color: var(--palace-red);
+      border-color: var(--gold);
+    }
+  }
+
+  button {
+    border: 1px solid var(--gold-light) !important;
+    border-radius: var(--radius-sm);
+  }
+}
+
+// 卡片
+.el-card {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gold-light);
+  overflow: hidden;
+}
+
+// 上传
+.el-upload-dragger {
+  border: 2px dashed var(--gold-light);
+  border-radius: var(--radius-md);
+  background: rgba(245, 240, 233, 0.5);
+
+  &:hover {
+    border-color: var(--gold);
+    background: rgba(245, 240, 233, 0.8);
+  }
+}

@@ -1,0 +1,25 @@
+{
+    "version":  "1.0.0",
+    "name":  "luoyang-scenic-ai",
+    "description":  "洛阳景区问答智能体 - 基于RAG技术的智能问答系统",
+    "scripts":  {
+                    "preview":  "vite preview",
+                    "build":  "vite build",
+                    "dev":  "vite"
+                },
+    "type":  "module",
+    "dependencies":  {
+                         "axios":  "^1.6.0",
+                         "vue":  "^3.4.0",
+                         "vue-router":  "^4.2.0",
+                         "pinia":  "^2.1.0",
+                         "element-plus":  "^2.5.0",
+                         "@element-plus/icons-vue":  "^2.3.0",
+                         "@vueuse/core":  "^10.7.0"
+                     },
+    "devDependencies":  {
+                            "@vitejs/plugin-vue":  "^5.0.0",
+                            "sass":  "^1.69.0",
+                            "vite":  "^5.0.0"
+                        }
+}

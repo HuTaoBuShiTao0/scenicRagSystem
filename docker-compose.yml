@@ -1,0 +1,30 @@
+
+services:
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: scenic-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+  # Chroma 向量数据库
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: scenic-chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma
+      - ANONYMIZED_TELEMETRY=FALSE
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  chroma_data:

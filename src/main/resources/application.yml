@@ -1,0 +1,55 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: scenic-rag-system
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/scenic_rag?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      timeout: 3000
+
+# 智谱 API 配置
+zhipu:
+  api-key: e7f818e334c94ffca6c6b479778edab1.FLePaYLg3U1kSO1W
+  model: glm-4.5-air
+  embedding-model: text_embedding_v3
+  base-url: https://open.bigmodel.cn/api/paas/v4
+
+# Chroma 向量数据库配置
+chroma:
+  host: localhost
+  port: 8000
+  collection-prefix: ly_rag_
+
+# 高德地图 API（天气查询用）
+amap:
+  api-key: your_amap_api_key
+
+# 业务配置
+app:
+  jwt-secret: luoyang-scenic-rag-system-jwt-secret-key-2024
+  # 知识库类型列表
+  knowledge-types: scenic,attraction,food,hotel,product,ticket,fixed_qa,customer_service
+  # RAG检索匹配阈值（score = 1 - L2距离，0.50 ≈ L2<0.5）
+  rag-similarity-threshold: 0.10
+  # 固定问答匹配阈值（需要更严格的匹配）
+  fixed-qa-threshold: 0.80
