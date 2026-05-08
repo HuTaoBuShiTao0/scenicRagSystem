@@ -9,8 +9,8 @@
           </div>
           <h2 class="nickname">{{ auth.nickname }}</h2>
           <p class="username">@{{ auth.user?.username }}</p>
-          <span class="role-badge" :class="auth.isAdmin ? 'admin' : 'user'">
-            {{ auth.isAdmin ? '管理员' : '普通用户' }}
+          <span class="role-badge" :class="auth.isAdmin ? (auth.user?.role === 'OWNER' ? 'owner' : 'admin') : 'user'">
+            {{ auth.roleName }}
           </span>
         </div>
       </div>
@@ -149,6 +149,12 @@ async function handleSave() {
     border-radius: 12px;
     font-size: 12px;
     font-family: var(--font-body);
+
+    &.owner {
+      background: linear-gradient(135deg, var(--gold), #b8943e);
+      color: #3A0A15;
+      box-shadow: 0 0 12px rgba(200, 164, 92, 0.4);
+    }
 
     &.admin {
       background: var(--gold);

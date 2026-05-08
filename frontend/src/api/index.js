@@ -101,6 +101,13 @@ export function getSessions() {
   return request.get('/sessions')
 }
 
+/**
+ * 分页查询当前用户的会话（支持搜索）
+ */
+export function getSessionsPaged(params) {
+  return request.get('/sessions/paged', { params })
+}
+
 export function createSession() {
   return request.post('/sessions')
 }
@@ -121,6 +128,38 @@ export function getUserProfile() {
 
 export function updateUserProfile(data) {
   return request.put('/user/profile', data)
+}
+
+// ============= 管理员：会话管理 =============
+
+/**
+ * 分页查询所有会话（管理员）
+ */
+export function getAdminSessionList(params) {
+  return request.get('/admin/sessions', { params })
+}
+
+/**
+ * 获取会话消息详情（管理员 - 只读）
+ */
+export function getAdminSessionMessages(sessionId) {
+  return request.get(`/admin/sessions/${sessionId}/messages`)
+}
+
+// ============= 管理员：用户管理 =============
+
+/**
+ * 获取所有用户列表（管理员）
+ */
+export function getUserList() {
+  return request.get('/admin/users')
+}
+
+/**
+ * 更新用户角色（管理员）
+ */
+export function updateUserRole(id, role) {
+  return request.put(`/admin/users/${id}/role`, { role })
 }
 
 // ============= 文件上传 =============

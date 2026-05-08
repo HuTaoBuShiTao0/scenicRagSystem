@@ -18,6 +18,18 @@
           <el-icon :size="20"><Collection /></el-icon>
           <span>知识库管理</span>
         </div>
+        <div class="nav-item" :class="{ active: route.path === '/sessions' }" @click="router.push('/sessions')">
+          <el-icon :size="20"><ChatLineSquare /></el-icon>
+          <span>历史会话</span>
+        </div>
+        <div v-if="auth.isAdmin" class="nav-item" :class="{ active: route.path === '/admin/users' }" @click="router.push('/admin/users')">
+          <el-icon :size="20"><User /></el-icon>
+          <span>用户管理</span>
+        </div>
+        <div v-if="auth.isAdmin" class="nav-item" :class="{ active: route.path === '/admin/sessions' }" @click="router.push('/admin/sessions')">
+          <el-icon :size="20"><ChatLineSquare /></el-icon>
+          <span>会话管理</span>
+        </div>
       </nav>
 
       <div class="sidebar-footer">
@@ -28,7 +40,7 @@
           </div>
           <div class="user-meta">
             <div class="user-name">{{ auth.nickname }}</div>
-            <div class="user-role">{{ auth.isAdmin ? '管理员' : '普通用户' }}</div>
+            <div class="user-role">{{ auth.roleName }}</div>
           </div>
         </div>
         <div class="gold-divider"></div>
@@ -48,7 +60,7 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ChatDotRound, Collection } from '@element-plus/icons-vue'
+import { ChatDotRound, Collection, User, ChatLineSquare } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()

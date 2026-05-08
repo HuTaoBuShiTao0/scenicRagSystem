@@ -1,6 +1,7 @@
 package com.example.scenic_rag_system;
 
 import com.example.scenic_rag_system.service.KnowledgeService;
+import com.example.scenic_rag_system.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -16,7 +17,7 @@ public class ScenicRagSystemApplication {
     }
 
     @Bean
-    CommandLineRunner init(KnowledgeService knowledgeService) {
+    CommandLineRunner init(KnowledgeService knowledgeService, UserService userService) {
         return args -> {
             log.info("===== 洛阳景区问答智能体 启动完成 =====");
             log.info("知识库类型: 景区, 景点, 美食, 酒店, 特产, 门票, 固定回答, 客服回答");
@@ -25,6 +26,9 @@ public class ScenicRagSystemApplication {
             log.info("缓存: Redis");
             log.info("LLM: 智谱GLM-4V-Plus");
             log.info("===================================");
+
+            // 初始化 Owner 账号
+            userService.initOwner();
 
             // 首次启动时同步数据到向量库
             try {

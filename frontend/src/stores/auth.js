@@ -7,7 +7,12 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
 
   const isLoggedIn = computed(() => !!token.value)
-  const isAdmin = computed(() => user.value?.role === 'ADMIN')
+  const isAdmin = computed(() => user.value?.role === 'ADMIN' || user.value?.role === 'OWNER')
+  const roleName = computed(() => {
+    if (user.value?.role === 'OWNER') return '超级管理员'
+    if (user.value?.role === 'ADMIN') return '管理员'
+    return '普通用户'
+  })
   const nickname = computed(() => user.value?.nickname || user.value?.username || '')
   const avatar = computed(() => user.value?.avatar || '')
   const userId = computed(() => user.value?.id)
@@ -63,6 +68,6 @@ export const useAuthStore = defineStore('auth', () => {
     return res
   }
 
-  return { token, user, isLoggedIn, isAdmin, nickname, avatar, userId,
+  return { token, user, isLoggedIn, isAdmin, roleName, nickname, avatar, userId,
            setAuth, updateUser, logout, login, register, fetchProfile, updateProfile }
 })

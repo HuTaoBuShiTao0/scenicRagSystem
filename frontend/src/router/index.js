@@ -21,10 +21,28 @@ const routes = [
     meta: { title: '知识库管理', auth: true, admin: true }
   },
   {
+    path: '/sessions',
+    name: 'UserSessions',
+    component: () => import('@/views/UserSessions.vue'),
+    meta: { title: '历史会话', auth: true }
+  },
+  {
     path: '/profile',
     name: 'Profile',
     component: () => import('@/views/ProfilePage.vue'),
     meta: { title: '个人信息', auth: true }
+  },
+  {
+    path: '/admin/users',
+    name: 'UserManagement',
+    component: () => import('@/views/UserManagement.vue'),
+    meta: { title: '用户管理', auth: true, admin: true }
+  },
+  {
+    path: '/admin/sessions',
+    name: 'AdminSessions',
+    component: () => import('@/views/AdminSessions.vue'),
+    meta: { title: '会话管理', auth: true, admin: true }
   }
 ]
 

@@ -1,61 +1,65 @@
 <template>
   <div class="chat-container">
-    <!-- 欢迎首页 -->
-    <div v-if="messages.length === 0" class="welcome-section">
-      <div class="petals" aria-hidden="true">
-        <span v-for="i in 8" :key="i" class="petal" :style="petalStyle(i)"></span>
-      </div>
-      <div class="welcome-inner">
-        <div class="welcome-header">
-          <h1 class="welcome-title">神都洛阳</h1>
-          <p class="welcome-subtitle">AI 智能问答助手 · 探索千年古都之美</p>
-        </div>
-        <div class="quick-actions">
-          <div v-for="action in quickActions" :key="action.id" class="action-card" @click="handleQuickAction(action)">
-            <div class="card-icon-wrap">
-              <el-icon :size="28">
-                <ChatDotRound v-if="action.id === 1" /><ForkSpoon v-else-if="action.id === 2" />
-                <House v-else-if="action.id === 3" /><Present v-else-if="action.id === 4" />
-                <Sunny v-else-if="action.id === 5" /><Service v-else />
-              </el-icon>
-            </div>
-            <div class="card-info">
-              <div class="card-title">{{ action.title }}</div>
-              <div class="card-desc">{{ action.desc }}</div>
-            </div>
-          </div>
-        </div>
-        <div class="hot-section">
-          <div class="hot-label">热问</div>
-          <div class="hot-list">
-            <div v-for="question in hotQuestions" :key="question.id" class="hot-item" @click="sendMessage(question.text)">
-              <span class="hot-text">{{ question.text }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+    <!-- 顶部操作栏（有消息时显示） -->
+    <div v-if="messages.length > 0" class="chat-topbar">
+      <button class="topbar-btn" @click="router.push('/sessions')">
+        <el-icon :size="14"><ChatLineSquare /></el-icon>
+        <span>历史记录</span>
+      </button>
+      <span class="topbar-title">神都洛阳</span>
+      <button class="topbar-btn primary" @click="handleNewSession">
+        <el-icon :size="14"><Plus /></el-icon>
+        <span>新建对话</span>
+      </button>
     </div>
 
-    <!-- 对话区域（含会话面板） -->
-    <div v-else class="chat-area-wrap">
-      <!-- 会话列表 -->
-      <div class="session-panel">
-        <div class="session-header">
-          <span>会话列表</span>
-          <el-icon :size="16" class="clickable" @click="handleNewSession"><Plus /></el-icon>
+    <!-- 可滚动的中间区域：欢迎页 + 消息 -->
+    <div class="scroll-area" ref="scrollAreaRef">
+      <!-- 欢迎首页（始终存在，有消息时变为紧凑模式） -->
+      <div class="welcome-section" :class="{ 'welcome-compact': messages.length > 0 }">
+        <div class="petals" aria-hidden="true">
+          <span v-for="i in 8" :key="i" class="petal" :style="petalStyle(i)"></span>
         </div>
-        <div class="session-list">
-          <div v-for="s in sessions" :key="s.id"
-               class="session-item" :class="{ active: s.id === currentSessionId }"
-               @click="switchSession(s)">
-            <span class="sess-title">{{ s.title || '新对话' }}</span>
-            <el-icon :size="12" class="clickable" @click.stop="handleDeleteSession(s)"><Delete /></el-icon>
+        <div class="welcome-inner">
+          <div class="welcome-header">
+            <h1 class="welcome-title">神都洛阳</h1>
+            <p class="welcome-subtitle">AI 智能问答助手 · 探索千年古都之美</p>
+          </div>
+          <div class="welcome-actions">
+            <div class="quick-actions">
+              <div v-for="action in quickActions" :key="action.id" class="action-card" @click="handleQuickAction(action)">
+                <div class="card-icon-wrap">
+                  <el-icon :size="28">
+                    <ChatDotRound v-if="action.id === 1" /><ForkSpoon v-else-if="action.id === 2" />
+                    <House v-else-if="action.id === 3" /><Present v-else-if="action.id === 4" />
+                    <Sunny v-else-if="action.id === 5" /><Service v-else />
+                  </el-icon>
+                </div>
+                <div class="card-info">
+                  <div class="card-title">{{ action.title }}</div>
+                  <div class="card-desc">{{ action.desc }}</div>
+                </div>
+              </div>
+            </div>
+            <div class="hot-section">
+              <div class="hot-label">热问</div>
+              <div class="hot-list">
+                <div v-for="question in hotQuestions" :key="question.id" class="hot-item" @click="sendMessage(question.text)">
+                  <span class="hot-text">{{ question.text }}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="chat-main">
-      <div class="messages-container" ref="messagesContainer">
+      <!-- 消息列表 -->
+      <div v-if="messages.length > 0" class="messages-section" ref="messagesRef">
+        <div class="messages-divider">
+          <span class="divider-line"></span>
+          <span class="divider-text">对话记录</span>
+          <span class="divider-line"></span>
+        </div>
         <div
           v-for="(message, index) in messages"
           :key="index"
@@ -134,10 +138,7 @@
             </div>
           </div>
         </div>
-
-        <!-- 正在输入（已合并到AI消息内，不再额外显示） -->
       </div>
-    </div>
     </div>
 
     <!-- 输入区域 -->
@@ -166,19 +167,21 @@
 
 <script setup>
 import { ref, onMounted, nextTick, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
-  ChatDotRound, ForkSpoon, House, Present, Sunny, Service, Plus, Delete
+  ChatDotRound, ForkSpoon, House, Present, Sunny, Service, Plus, ChatLineSquare
 } from '@element-plus/icons-vue'
-import { sendChatMessage, getSessions, createSession, deleteSession, getSessionMessages } from '@/api'
+import { sendChatMessage, createSession, getSessionMessages } from '@/api'
 
+const router = useRouter()
+const route = useRoute()
 const inputMessage = ref('')
 const messages = ref([])
 const isTyping = ref(false)
-const messagesContainer = ref(null)
-const sessions = ref([])
+const scrollAreaRef = ref(null)
+const messagesRef = ref(null)
 const currentSessionId = ref(null)
-const showSessionList = ref(true)
 
 // 快捷操作
 const quickActions = [
@@ -199,29 +202,22 @@ const hotQuestions = [
   { id: 5, text: '老城有什么好吃的？' }
 ]
 
-// 会话管理
-async function loadSessions() {
-  try {
-    const res = await getSessions()
-    if (res.code === 200) sessions.value = res.data || []
-  } catch (e) { /* ignore */ }
-}
-
+// 创建新会话
 async function handleNewSession() {
   try {
     const res = await createSession()
     if (res.code === 200) {
       currentSessionId.value = res.data.id
       messages.value = []
-      await loadSessions()
     }
   } catch (e) { ElMessage.error('创建会话失败') }
 }
 
-async function switchSession(session) {
-  currentSessionId.value = session.id
+// 加载指定会话的消息
+async function loadSessionMessages(sessionId) {
+  currentSessionId.value = sessionId
   try {
-    const res = await getSessionMessages(session.id)
+    const res = await getSessionMessages(sessionId)
     if (res.code === 200) {
       messages.value = (res.data || []).map(m => ({
         role: m.role,
@@ -230,17 +226,6 @@ async function switchSession(session) {
       }))
     }
   } catch (e) { /* ignore */ }
-}
-
-async function handleDeleteSession(session) {
-  try {
-    await deleteSession(session.id)
-    if (currentSessionId.value === session.id) {
-      currentSessionId.value = null
-      messages.value = []
-    }
-    await loadSessions()
-  } catch (e) { ElMessage.error('删除失败') }
 }
 
 // 处理快捷操作
@@ -298,6 +283,10 @@ const sendMessage = async (text) => {
       message,
       history,
       (data) => {
+        // 同步 sessionId（新建会话时后端返回）
+        if (data.sessionId) {
+          currentSessionId.value = data.sessionId
+        }
         const m = messages.value[msgIdx]
         if (!m) return
         if (data.content) {
@@ -316,7 +305,7 @@ const sendMessage = async (text) => {
           isTyping.value = false
           scrollToBottom()
         }
-        loadSessions() // 刷新会话列表（标题可能已更新）
+        // 消息发送完成
       },
       (err) => {
         const m = messages.value[msgIdx]
@@ -344,8 +333,8 @@ const handleSend = () => {
 // 滚动到底部
 const scrollToBottom = () => {
   nextTick(() => {
-    if (messagesContainer.value) {
-      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+    if (scrollAreaRef.value) {
+      scrollAreaRef.value.scrollTop = scrollAreaRef.value.scrollHeight
     }
   })
 }
@@ -379,12 +368,10 @@ watch(messages, () => {
 }, { deep: true })
 
 onMounted(async () => {
-  await loadSessions()
-  // 自动创建第一个会话
-  if (sessions.value.length === 0) {
-    await handleNewSession()
-  } else {
-    await switchSession(sessions.value[0])
+  // 从 URL 参数加载指定会话
+  const sessionId = route.query.session
+  if (sessionId) {
+    await loadSessionMessages(Number(sessionId))
   }
 })
 </script>
@@ -398,15 +385,95 @@ onMounted(async () => {
   background: var(--ivory);
 }
 
+// ============ 顶部操作栏 ============
+.chat-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: #fff;
+  border-bottom: 1px solid var(--gold-light);
+  flex-shrink: 0;
+  z-index: 10;
+
+  .topbar-title {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 1px;
+  }
+
+  .topbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid var(--gold-light);
+    background: #fff;
+    color: var(--ink-light);
+
+    &:hover {
+      border-color: var(--gold);
+      color: var(--palace-red);
+      box-shadow: 0 2px 8px rgba(200, 164, 92, 0.12);
+    }
+
+    &.primary {
+      background: linear-gradient(135deg, var(--palace-red-light), var(--palace-red));
+      color: #fff;
+      border-color: transparent;
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(122, 26, 46, 0.25);
+      }
+    }
+  }
+}
+
+// ============ 可滚动区域 ============
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: var(--gold-light); border-radius: 2px; }
+}
+
 // ============ 欢迎首页 ============
 .welcome-section {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 40px 24px;
   position: relative;
   overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // 紧凑模式（已有消息时）
+  &.welcome-compact {
+    padding: 24px 24px 16px;
+
+    .welcome-title {
+      font-size: 28px;
+      letter-spacing: 4px;
+      margin-bottom: 4px;
+    }
+
+    .welcome-subtitle {
+      font-size: 13px;
+      margin-bottom: 0;
+    }
+
+    .petals { opacity: 0.2; }
+  }
 }
 
 .welcome-inner {
@@ -615,90 +682,32 @@ onMounted(async () => {
 }
 
 // ============ 对话区域 ============
-.chat-area-wrap {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-.session-panel {
-  width: 200px;
-  min-width: 200px;
-  background: rgba(245, 240, 233, 0.8);
-  border-right: 1px solid var(--gold-light);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-
-  .session-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 14px;
-    font-family: var(--font-body);
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--ink);
-    border-bottom: 1px solid var(--gold-light);
-  }
-
-  .clickable {
-    cursor: pointer;
-    color: var(--gold-dark);
-    transition: color 0.2s;
-    &:hover { color: var(--palace-red); }
-  }
-
-  .session-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 4px;
-  }
-
-  .session-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: var(--font-body);
-    font-size: 13px;
-    color: var(--ink);
-    margin-bottom: 2px;
-
-    .sess-title {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      flex: 1;
-      margin-right: 4px;
-    }
-
-    &:hover {
-      background: rgba(200, 164, 92, 0.1);
-    }
-
-    &.active {
-      background: var(--palace-red);
-      color: #fff;
-
-      .clickable { color: rgba(255,255,255,0.6); &:hover { color: #fff; } }
-    }
-  }
-}
-
-.chat-main {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px 24px;
-}
-
-.messages-container {
+// ============ 消息区域 ============
+.messages-section {
   max-width: 860px;
   margin: 0 auto;
-  padding-bottom: 20px;
+  padding: 8px 24px 24px;
+}
+
+.messages-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-light), transparent);
+  }
+
+  .divider-text {
+    font-size: 11px;
+    color: var(--ink-light);
+    letter-spacing: 2px;
+    white-space: nowrap;
+    opacity: 0.6;
+  }
 }
 
 .message-item {

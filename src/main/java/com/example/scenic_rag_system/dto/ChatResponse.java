@@ -22,6 +22,9 @@ public class ChatResponse {
     /** 意图类型 */
     private String intentType;
 
+    /** 会话 ID（新建会话时返回） */
+    private Long sessionId;
+
     @Data
     @Builder
     @NoArgsConstructor

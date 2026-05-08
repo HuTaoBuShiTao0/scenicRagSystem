@@ -47,9 +47,13 @@ public class ChatService {
     public void processMessageStream(String userMessage, Long sessionId, Long userId,
                                       SseEmitter emitter, ObjectMapper om) {
         try {
+            boolean isNewSession = false;
             if (sessionId == null) {
                 sessionId = sessionService.createByUserId(userId).getId();
+                isNewSession = true;
             }
+            // 将会话 ID 返回给前端（新建或已有都返回，确保前端同步）
+            sendJsonSafe(emitter, om, ChatResponse.builder().sessionId(sessionId).build());
             messageService.addMessage(sessionId, "user", userMessage, null);
 
             List<Map<String, Object>> history = messageService.getMessages(sessionId);

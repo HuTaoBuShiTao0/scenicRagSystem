@@ -11,7 +11,7 @@ public class AdminInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String role = (String) request.getAttribute("role");
-        if (!"ADMIN".equals(role)) {
+        if (!"ADMIN".equals(role) && !"OWNER".equals(role)) {
             throw new RuntimeException("权限不足，需要管理员权限");
         }
         return true;
