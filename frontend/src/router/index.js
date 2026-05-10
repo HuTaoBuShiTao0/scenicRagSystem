@@ -43,6 +43,12 @@ const routes = [
     name: 'AdminSessions',
     component: () => import('@/views/AdminSessions.vue'),
     meta: { title: '会话管理', auth: true, admin: true }
+  },
+  {
+    path: '/admin/prompts',
+    name: 'PromptManagement',
+    component: () => import('@/views/PromptManagement.vue'),
+    meta: { title: '提示词管理', auth: true, admin: true }
   }
 ]
 

@@ -1,6 +1,9 @@
 package com.example.scenic_rag_system.service;
 
+import com.example.scenic_rag_system.controller.PromptController;
 import com.example.scenic_rag_system.dto.IntentResult;
+import com.example.scenic_rag_system.entity.Prompt;
+import com.example.scenic_rag_system.repository.PromptRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +17,7 @@ import java.util.*;
 /**
  * 意图识别服务
  * 使用智谱LLM根据预设提示词识别用户意图
+ * 提示词内容优先从数据库加载（支持前端实时编辑），无配置时使用内置默认值
  */
 @Service
 @Slf4j
@@ -22,8 +26,11 @@ public class IntentRecognitionService {
 
     private final ZhipuApiService zhipuApiService;
     private final ObjectMapper objectMapper;
+    private final PromptRepository promptRepository;
 
-    private static final String SYSTEM_PROMPT = """
+    private static final String PROMPT_TYPE = "INTENT_RECOGNITION";
+
+    private static final String FALLBACK_SYSTEM_PROMPT = """
             你是一个旅游意图识别助手，擅长结合对话上下文对用户提问准确识别旅行相关意图。
 
             ## 技能
@@ -102,6 +109,29 @@ public class IntentRecognitionService {
             """;
 
     /**
+     * 从数据库或缓存获取意图识别提示词，不存在则使用内置默认值
+     */
+    private String getSystemPrompt() {
+        // 先从缓存读取
+        String cached = PromptController.promptCache.get(PROMPT_TYPE);
+        if (cached != null) {
+            return cached;
+        }
+        // 从数据库加载
+        try {
+            Optional<Prompt> promptOpt = promptRepository.findByType(PROMPT_TYPE);
+            if (promptOpt.isPresent() && promptOpt.get().getEnabled()) {
+                String content = promptOpt.get().getContent();
+                PromptController.promptCache.put(PROMPT_TYPE, content);
+                return content;
+            }
+        } catch (Exception e) {
+            log.warn("Failed to load prompt from DB, using fallback: {}", e.getMessage());
+        }
+        return FALLBACK_SYSTEM_PROMPT;
+    }
+
+    /**
      * 识别用户意图
      */
     public IntentResult recognize(String userMessage, List<Map<String, String>> history) {
@@ -114,16 +144,18 @@ public class IntentRecognitionService {
                 }
             }
 
+            String systemPrompt = getSystemPrompt();
+
             // 替换提示词中的模板变量
             String currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            String userPrompt = SYSTEM_PROMPT + "\n\n"
+            String userPrompt = systemPrompt + "\n\n"
                     + "今天时间日期是" + currentTime + "，根据<历史提问>和用户的<最新提问>进行意图类型列表输出。"
                     + "切记输出严格遵守示例的 JSON 格式，不输出额外内容:\n"
                     + "## 历史提问\n" + historyText + "\n\n"
                     + "最新提问:\n" + userMessage;
 
             List<Map<String, String>> messages = new ArrayList<>();
-            messages.add(Map.of("role", "system", "content", SYSTEM_PROMPT));
+            messages.add(Map.of("role", "system", "content", systemPrompt));
             messages.add(Map.of("role", "user", "content", userPrompt));
 
             String response = zhipuApiService.chatSync(messages);

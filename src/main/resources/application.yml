@@ -40,9 +40,12 @@ chroma:
   port: 8000
   collection-prefix: ly_rag_
 
-# 高德地图 API（天气查询用）
-amap:
-  api-key: your_amap_api_key
+# 和风天气 API（天气查询用）
+qweather:
+  key-id: TDGWMN3YTV
+  project-id: 398A5FDXVR
+  private-key: "MC4CAQAwBQYDK2VwBCIEIG6T0evGc1NBtcnrCPWfr1tcE+V/XVNh0fsEPZII74u+"
+  api-host: pa7qqtre2v.re.qweatherapi.com
 
 # 业务配置
 app:
@@ -51,5 +54,5 @@ app:
   knowledge-types: scenic,attraction,food,hotel,product,ticket,fixed_qa,customer_service
   # RAG检索匹配阈值（score = 1 - L2距离，0.50 ≈ L2<0.5）
   rag-similarity-threshold: 0.10
-  # 固定问答匹配阈值（需要更严格的匹配）
-  fixed-qa-threshold: 0.80
+  # 固定问答匹配阈值（需要更严格的匹配，调高以减少误匹配）
+  fixed-qa-threshold: 0.92

@@ -30,6 +30,10 @@
           <el-icon :size="20"><ChatLineSquare /></el-icon>
           <span>会话管理</span>
         </div>
+        <div v-if="auth.isAdmin" class="nav-item" :class="{ active: route.path === '/admin/prompts' }" @click="router.push('/admin/prompts')">
+          <el-icon :size="20"><EditPen /></el-icon>
+          <span>提示词管理</span>
+        </div>
       </nav>
 
       <div class="sidebar-footer">
@@ -60,7 +64,7 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ChatDotRound, Collection, User, ChatLineSquare } from '@element-plus/icons-vue'
+import { ChatDotRound, Collection, User, ChatLineSquare, EditPen } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
@@ -82,7 +86,9 @@ function handleLogout() {
 .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 24px 20px 20px; border-bottom: 1px solid rgba(200,164,92,0.2); position: relative; z-index: 1;
   .brand-text { font-family: var(--font-display); font-size: 22px; color: var(--gold); letter-spacing: 4px; }
 }
-.sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 6px; position: relative; z-index: 1; }
+.sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 6px; position: relative; z-index: 1; overflow-y: auto; }
+.sidebar-nav::-webkit-scrollbar { width: 3px; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: rgba(200,164,92,0.3); border-radius: 2px; }
 .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--radius-sm); cursor: pointer; color: rgba(255,255,255,0.8); font-family: var(--font-body); font-size: 15px; transition: all 0.3s ease; position: relative;
   .el-icon { color: var(--gold-light); transition: all 0.3s ease; }
   &:hover { background: rgba(200,164,92,0.15); color: #fff; box-shadow: 0 0 12px rgba(200,164,92,0.15); .el-icon { color: var(--gold); } }

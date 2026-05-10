@@ -1,46 +1,63 @@
 <template>
   <div class="login-page">
-    <div class="login-bg">
-      <div class="bg-overlay"></div>
-      <div class="bg-content">
-        <h1 class="bg-title">神都洛阳</h1>
-        <p class="bg-subtitle">十三朝古都 · 千年风华</p>
-        <p class="bg-quote">若问古今兴废事</p>
-        <p class="bg-quote">请君只看洛阳城</p>
+    <!-- 全屏意境背景 -->
+    <div class="bg-scene">
+      <div class="mist-1"></div>
+      <div class="mist-2"></div>
+      <div class="mountains"></div>
+      <!-- 飘落牡丹瓣 -->
+      <div class="petals-rain" aria-hidden="true">
+        <span v-for="i in 10" :key="i" class="petal" :style="petalStyle(i)"></span>
       </div>
     </div>
 
-    <div class="login-form-wrap">
-      <div class="form-card">
+    <!-- 居中登录卡片 -->
+    <div class="login-card">
+      <!-- 左侧装饰 -->
+      <div class="card-deco">
+        <div class="deco-seal">{{ isRegister ? '注' : '登' }}</div>
+        <div class="deco-text">
+          <span class="deco-main">神都洛阳</span>
+          <span class="deco-sub">十三朝古都</span>
+        </div>
+        <div class="deco-line"></div>
+        <p class="deco-quote">若问古今兴废事</p>
+        <p class="deco-quote">请君只看洛阳城</p>
+      </div>
+
+      <!-- 右侧表单 -->
+      <div class="card-form">
         <div class="form-header">
-          <svg width="40" height="40" viewBox="0 0 40 40">
-            <rect width="40" height="40" rx="8" fill="var(--palace-red)"/>
-            <text x="20" y="28" text-anchor="middle" font-size="24" fill="var(--gold)" font-family="serif" font-weight="bold">洛</text>
-          </svg>
-          <h2>{{ isRegister ? '注册' : '登录' }}</h2>
-          <p class="form-desc">{{ isRegister ? '创建账号，开启洛阳之旅' : '欢迎回来，继续探索洛阳' }}</p>
+          <h2>{{ isRegister ? '创建账号' : '欢迎回来' }}</h2>
+          <p>{{ isRegister ? '开启您的洛阳探索之旅' : '继续探索千年古都之美' }}</p>
         </div>
 
         <div class="form-body">
-          <div class="input-group">
+          <div class="field" :class="{ filled: username }">
+            <input v-model="username" type="text" autocomplete="username" @keyup.enter="handleSubmit" />
             <label>用户名</label>
-            <input v-model="username" placeholder="请输入用户名" @keyup.enter="handleSubmit" />
+            <div class="field-bar"></div>
           </div>
-          <div class="input-group">
+
+          <div class="field" :class="{ filled: password }">
+            <input v-model="password" type="password" autocomplete="current-password" @keyup.enter="handleSubmit" />
             <label>密码</label>
-            <input v-model="password" type="password" placeholder="请输入密码" @keyup.enter="handleSubmit" />
+            <div class="field-bar"></div>
           </div>
 
           <button class="submit-btn" :disabled="loading" @click="handleSubmit">
-            {{ loading ? '处理中...' : (isRegister ? '注册' : '登录') }}
+            <span v-if="!loading">{{ isRegister ? '注 册' : '登 录' }}</span>
+            <span v-else class="btn-loading">
+              <span class="btn-spinner"></span>
+              处理中...
+            </span>
           </button>
 
-          <div class="toggle-link">
-            <span v-if="isRegister">已有账号？</span>
-            <span v-else>还没有账号？</span>
-            <a href="#" @click.prevent="isRegister = !isRegister">
+          <div class="toggle-area">
+            <span>{{ isRegister ? '已有账号？' : '还没有账号？' }}</span>
+            <button class="toggle-link" @click="isRegister = !isRegister">
               {{ isRegister ? '去登录' : '去注册' }}
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -60,6 +77,21 @@ const isRegister = ref(false)
 const username = ref('')
 const password = ref('')
 const loading = ref(false)
+
+function petalStyle(i) {
+  const left = ((i * 37 + 13) % 100)
+  const delay = (i * 0.7) % 8
+  const size = 6 + (i % 4) * 3
+  const duration = 8 + (i % 5) * 2
+  return {
+    left: `${left}%`,
+    width: `${size}px`,
+    height: `${size}px`,
+    animationDelay: `${delay}s`,
+    animationDuration: `${duration}s`,
+    '--drift': `${((i * 23) % 60) - 30}px`
+  }
+}
 
 async function handleSubmit() {
   if (!username.value || !password.value) {
@@ -90,184 +122,425 @@ async function handleSubmit() {
 </script>
 
 <style scoped lang="scss">
+// ========================================
+// 神都洛阳 · 登录页 — 夜阑千灯
+// ========================================
+
 .login-page {
-  display: flex;
+  position: relative;
+  width: 100%;
   height: 100vh;
   overflow: hidden;
-}
-
-.login-bg {
-  flex: 1;
-  position: relative;
-  background:
-    radial-gradient(ellipse at 30% 20%, rgba(200, 164, 92, 0.15) 0%, transparent 60%),
-    radial-gradient(ellipse at 70% 80%, rgba(122, 26, 46, 0.1) 0%, transparent 50%),
-    linear-gradient(135deg, var(--palace-red-dark) 0%, var(--palace-red) 50%, #3A0A15 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  background: #0d0508;
+}
 
-  .bg-overlay {
+// ============ 全屏意境背景 ============
+.bg-scene {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(200, 164, 92, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 25% 70%, rgba(122, 26, 46, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 75% 60%, rgba(122, 26, 46, 0.08) 0%, transparent 50%),
+    linear-gradient(180deg, #1a0a0f 0%, #2d1219 25%, #3a1520 50%, #2a0e15 75%, #0d0508 100%);
+
+  &::before {
+    content: '';
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(2px 2px at 20% 30%, rgba(200, 164, 92, 0.3), transparent),
-      radial-gradient(2px 2px at 40% 70%, rgba(200, 164, 92, 0.2), transparent),
-      radial-gradient(2px 2px at 60% 20%, rgba(200, 164, 92, 0.25), transparent),
-      radial-gradient(2px 2px at 80% 60%, rgba(200, 164, 92, 0.2), transparent);
-    background-size: 200px 200px;
-  }
-
-  .bg-content {
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    color: #fff;
-  }
-
-  .bg-title {
-    font-family: var(--font-display);
-    font-size: 72px;
-    color: var(--gold);
-    letter-spacing: 12px;
-    margin-bottom: 12px;
-    text-shadow: 0 4px 20px rgba(200, 164, 92, 0.3);
-  }
-
-  .bg-subtitle {
-    font-family: var(--font-body);
-    font-size: 16px;
-    opacity: 0.7;
-    letter-spacing: 4px;
-    margin-bottom: 40px;
-  }
-
-  .bg-quote {
-    font-family: var(--font-body);
-    font-size: 14px;
-    opacity: 0.5;
-    letter-spacing: 3px;
-    line-height: 2;
+      radial-gradient(1px 1px at 15% 20%, rgba(200,164,92,0.12), transparent),
+      radial-gradient(1px 1px at 35% 50%, rgba(200,164,92,0.08), transparent),
+      radial-gradient(1px 1px at 55% 15%, rgba(200,164,92,0.1), transparent),
+      radial-gradient(1px 1px at 75% 40%, rgba(200,164,92,0.06), transparent),
+      radial-gradient(1px 1px at 90% 70%, rgba(200,164,92,0.08), transparent),
+      radial-gradient(1px 1px at 45% 85%, rgba(200,164,92,0.07), transparent);
+    background-size: 160px 160px;
+    pointer-events: none;
   }
 }
 
-.login-form-wrap {
-  width: 460px;
-  min-width: 460px;
-  background: var(--ivory);
+// 雾霭
+.mist-1, .mist-2 {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.mist-1 {
+  background: radial-gradient(ellipse 80% 40% at 50% 80%, rgba(200,164,92,0.03) 0%, transparent 60%);
+  animation: mistDrift 25s ease-in-out infinite;
+}
+
+.mist-2 {
+  background: radial-gradient(ellipse 60% 30% at 30% 70%, rgba(200,164,92,0.02) 0%, transparent 50%);
+  animation: mistDrift 20s ease-in-out infinite -10s;
+}
+
+@keyframes mistDrift {
+  0%, 100% { transform: translateX(0) scale(1); }
+  50% { transform: translateX(4%) scale(1.03); }
+}
+
+// 远山
+.mountains {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 100% at 20% 100%, rgba(200,164,92,0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 100% at 50% 100%, rgba(200,164,92,0.03) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 100% at 75% 100%, rgba(122,26,46,0.06) 0%, transparent 60%);
+}
+
+// 花瓣
+.petals-rain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.petal {
+  position: absolute;
+  top: -20px;
+  border-radius: 50% 0 50% 0;
+  background: linear-gradient(135deg, rgba(200,164,92,0.15), rgba(200,164,92,0.03));
+  opacity: 0;
+  animation: petalFall linear infinite;
+
+  @keyframes petalFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+    8% { opacity: 0.5; }
+    90% { opacity: 0.2; }
+    100% { transform: translateY(calc(100vh + 20px)) rotate(720deg) translateX(var(--drift, 0px)); opacity: 0; }
+  }
+}
+
+// ============ 居中登录卡片 ============
+.login-card {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  background: rgba(250, 248, 243, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.5),
+    0 0 0 1px rgba(200, 164, 92, 0.1);
+  animation: cardAppear 0.8s ease-out;
+  width: 680px;
+  max-width: 90vw;
+}
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+// ===== 左侧装饰区 =====
+.card-deco {
+  width: 220px;
+  min-width: 220px;
+  background: linear-gradient(135deg, var(--palace-red-dark) 0%, var(--palace-red) 50%, #5a0f1f 100%);
+  padding: 40px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+
+  // 暗纹
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(200,164,92,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 80%, rgba(200,164,92,0.05) 0%, transparent 40%);
+    pointer-events: none;
+  }
+}
+
+.deco-seal {
+  width: 52px;
+  height: 52px;
+  border: 2px solid var(--gold);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px;
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--gold);
+  transform: rotate(-5deg);
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
 }
 
-.form-card {
-  width: 100%;
-  max-width: 360px;
+.deco-text {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 20px;
+
+  .deco-main {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 26px;
+    color: var(--gold);
+    letter-spacing: 6px;
+    line-height: 1.3;
+  }
+
+  .deco-sub {
+    display: block;
+    font-size: 11px;
+    color: rgba(200,164,92,0.4);
+    letter-spacing: 3px;
+    margin-top: 4px;
+  }
+}
+
+.deco-line {
+  width: 40px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.3;
+  margin: 0 auto 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.deco-quote {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: rgba(200,164,92,0.35);
+  letter-spacing: 2px;
+  line-height: 2;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+// ===== 右侧表单区 =====
+.card-form {
+  flex: 1;
+  padding: 40px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .form-header {
-  text-align: center;
-  margin-bottom: 36px;
+  margin-bottom: 28px;
 
   h2 {
     font-family: var(--font-body);
-    font-size: 24px;
-    color: var(--ink);
-    margin: 12px 0 6px;
-  }
-
-  .form-desc {
-    font-family: var(--font-body);
-    font-size: 14px;
-    color: var(--ink-light);
-  }
-}
-
-.form-body {
-  .input-group {
-    margin-bottom: 20px;
-
-    label {
-      display: block;
-      font-family: var(--font-body);
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--ink);
-      margin-bottom: 6px;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px 14px;
-      border: 1px solid var(--gold-light);
-      border-radius: 8px;
-      font-family: var(--font-body);
-      font-size: 14px;
-      color: var(--ink);
-      background: #fff;
-      outline: none;
-      transition: all 0.3s ease;
-
-      &:focus {
-        border-color: var(--gold);
-        box-shadow: 0 0 0 3px rgba(200, 164, 92, 0.1);
-      }
-
-      &::placeholder {
-        color: var(--ink-light);
-        opacity: 0.5;
-      }
-    }
-  }
-
-  .submit-btn {
-    width: 100%;
-    padding: 13px;
-    background: linear-gradient(135deg, var(--palace-red-light), var(--palace-red));
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-family: var(--font-body);
-    font-size: 16px;
+    font-size: 20px;
     font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    letter-spacing: 4px;
-
-    &:hover:not(:disabled) {
-      background: var(--palace-red-dark);
-      box-shadow: 0 4px 16px rgba(122, 26, 46, 0.3);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+    color: var(--ink);
+    margin-bottom: 4px;
+    letter-spacing: 1px;
   }
 
-  .toggle-link {
-    text-align: center;
-    margin-top: 20px;
-    font-family: var(--font-body);
+  p {
     font-size: 13px;
     color: var(--ink-light);
+    letter-spacing: 0.5px;
+  }
+}
 
-    a {
+// 浮动标签
+.form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.field {
+  position: relative;
+  padding-top: 6px;
+
+  input {
+    width: 100%;
+    padding: 10px 0;
+    border: none;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: var(--ink);
+    outline: none;
+    position: relative;
+    z-index: 1;
+
+    &:-webkit-autofill {
+      -webkit-box-shadow: 0 0 0 30px rgba(250,248,243,0.95) inset !important;
+      -webkit-text-fill-color: var(--ink) !important;
+      caret-color: var(--ink);
+    }
+  }
+
+  label {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: var(--ink-light);
+    transition: all 0.25s ease;
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  .field-bar {
+    height: 1px;
+    background: rgba(200,164,92,0.2);
+    transition: all 0.3s ease;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--palace-red), var(--gold));
+      transition: width 0.3s ease;
+    }
+  }
+
+  &:focus-within, &.filled {
+    label {
+      top: -4px;
+      font-size: 11px;
+      opacity: 0.8;
       color: var(--palace-red);
-      margin-left: 4px;
-      text-decoration: none;
+    }
+    .field-bar::after { width: 100%; }
+  }
+}
 
-      &:hover {
-        text-decoration: underline;
-      }
+// 按钮
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--palace-red-light), var(--palace-red));
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 6px;
+  position: relative;
+  overflow: hidden;
+  margin-top: 4px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    transition: left 0.5s ease;
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(122, 26, 46, 0.25);
+
+    &::before { left: 100%; }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// 切换
+.toggle-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--ink-light);
+
+  .toggle-link {
+    background: none;
+    border: none;
+    color: var(--palace-red);
+    cursor: pointer;
+    font-family: var(--font-body);
+    padding: 0;
+    font-size: 13px;
+    transition: all 0.2s;
+
+    &:hover {
+      text-decoration: underline;
+      color: var(--palace-red-dark);
     }
   }
 }
 
-@media (max-width: 860px) {
-  .login-bg { display: none; }
-  .login-form-wrap { width: 100%; min-width: auto; }
+// ============ 响应式 ============
+@media (max-width: 720px) {
+  .login-card {
+    flex-direction: column;
+    width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .card-deco {
+    width: 100%;
+    min-width: auto;
+    padding: 28px 20px;
+
+    .deco-quote { display: none; }
+    .deco-line { margin-bottom: 0; }
+  }
+
+  .card-form {
+    padding: 28px 24px;
+  }
 }
 </style>

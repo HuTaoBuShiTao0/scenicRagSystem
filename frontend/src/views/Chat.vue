@@ -7,10 +7,28 @@
         <span>历史记录</span>
       </button>
       <span class="topbar-title">神都洛阳</span>
-      <button class="topbar-btn primary" @click="handleNewSession">
-        <el-icon :size="14"><Plus /></el-icon>
-        <span>新建对话</span>
-      </button>
+      <div class="topbar-right">
+        <div class="weather-mini" v-if="weatherNow" @click="sendMessage(weatherQueryTip)">
+          <span class="wm-temp">{{ weatherNow.tempMax }}°</span>
+          <span class="wm-text">{{ weatherNow.textDay }}</span>
+          <span class="wm-dot"></span>
+        </div>
+        <button class="topbar-btn primary" @click="handleNewSession">
+          <el-icon :size="14"><Plus /></el-icon>
+          <span>新建对话</span>
+        </button>
+      </div>
+    </div>
+    <!-- 欢迎页天气（无消息时显示） -->
+    <div v-if="messages.length === 0 && weatherNow" class="welcome-weather">
+      <div class="ww-inner" @click="sendMessage(weatherQueryTip)">
+        <span class="ww-temp">{{ weatherNow.tempMax }}°</span>
+        <div class="ww-info">
+          <span class="ww-city">洛阳</span>
+          <span class="ww-desc">{{ weatherNow.textDay }}</span>
+        </div>
+        <span class="ww-wind">{{ weatherNow.windDirDay }}{{ weatherNow.windScaleDay }}级</span>
+      </div>
     </div>
 
     <!-- 可滚动的中间区域：欢迎页 + 消息 -->
@@ -92,46 +110,88 @@
               </div>
             </div>
 
-            <!-- 智能卡片 -->
-            <div v-if="message.card" class="message-card">
-              <div v-if="message.card.type === 'scenic'" class="info-card scenic">
-                <div class="card-image-wrap">
-                  <img :src="message.card.data.image" :alt="message.card.data.name">
-                  <div class="img-frame tl"></div>
-                  <div class="img-frame tr"></div>
-                  <div class="img-frame bl"></div>
-                  <div class="img-frame br"></div>
-                </div>
-                <div class="card-body">
-                  <h4 class="card-name">{{ message.card.data.name }}</h4>
-                  <div class="card-tags">
-                    <span v-for="tag in message.card.data.tags" :key="tag" class="tag-seal">{{ tag }}</span>
+            <!-- 智能卡片（多条，水平滚动） -->
+            <div v-if="message.cards?.length" class="cards-carousel">
+              <div
+                v-for="(card, ci) in message.cards"
+                :key="ci"
+                class="carousel-item"
+              >
+                <!-- 景点讲解卡片 -->
+                <div v-if="card.type === 'attraction'" class="info-card">
+                  <div class="card-badge">🏛️</div>
+                  <h4 class="card-name">{{ card.data.name }}</h4>
+                  <div class="card-tags" v-if="card.data.tags?.length">
+                    <span v-for="tag in card.data.tags" :key="tag" class="tag-seal">{{ tag }}</span>
                   </div>
-                  <p class="card-desc">{{ message.card.data.description }}</p>
+                  <p class="card-desc">{{ card.data.briefIntro || card.data.description }}</p>
                   <div class="card-meta">
-                    <span>📍 {{ message.card.data.address }}</span>
-                    <span>⭐ {{ message.card.data.rating }}</span>
+                    <span v-if="card.data.address">📍 {{ card.data.address }}</span>
                   </div>
                 </div>
-              </div>
 
-              <div v-else-if="message.card.type === 'food'" class="info-card food">
-                <div class="card-image-wrap">
-                  <img :src="message.card.data.image" :alt="message.card.data.name">
-                  <div class="img-frame tl"></div>
-                  <div class="img-frame tr"></div>
-                  <div class="img-frame bl"></div>
-                  <div class="img-frame br"></div>
-                </div>
-                <div class="card-body">
-                  <h4 class="card-name">{{ message.card.data.name }}</h4>
-                  <div class="card-tags">
-                    <span v-for="tag in message.card.data.tags" :key="tag" class="tag-seal">{{ tag }}</span>
+                <!-- 美食导购卡片 -->
+                <div v-else-if="card.type === 'food'" class="info-card">
+                  <div class="card-badge">🍜</div>
+                  <h4 class="card-name">{{ card.data.name }}</h4>
+                  <div class="card-tags" v-if="card.data.tags?.length">
+                    <span v-for="tag in card.data.tags" :key="tag" class="tag-seal">{{ tag }}</span>
                   </div>
-                  <p class="card-desc">{{ message.card.data.description }}</p>
                   <div class="card-meta">
-                    <span>🏪 {{ message.card.data.shopName }}</span>
-                    <span>💰 {{ message.card.data.price }}</span>
+                    <span v-if="card.data.address">📍 {{ card.data.address }}</span>
+                  </div>
+                </div>
+
+                <!-- 酒店导购卡片 -->
+                <div v-else-if="card.type === 'hotel'" class="info-card">
+                  <div class="card-badge">🏨</div>
+                  <h4 class="card-name">{{ card.data.name }}</h4>
+                  <div class="card-tags" v-if="card.data.level">
+                    <span class="tag-seal">{{ card.data.level }}</span>
+                  </div>
+                  <div class="card-meta">
+                    <span v-if="card.data.price">💰 {{ card.data.price }}</span>
+                    <span v-if="card.data.address">📍 {{ card.data.address }}</span>
+                  </div>
+                </div>
+
+                <!-- 特产文创卡片 -->
+                <div v-else-if="card.type === 'product'" class="info-card">
+                  <div class="card-badge">🎁</div>
+                  <h4 class="card-name">{{ card.data.name }}</h4>
+                  <div class="card-tags" v-if="card.data.category">
+                    <span class="tag-seal">{{ card.data.category }}</span>
+                  </div>
+                  <p class="card-desc">{{ card.data.description }}</p>
+                  <div class="card-meta">
+                    <span v-if="card.data.price">💰 {{ card.data.price }}</span>
+                  </div>
+                </div>
+
+                <!-- 天气查询卡片 -->
+                <div v-else-if="card.type === 'weather'" class="info-card weather">
+                  <div class="card-badge">🌤️</div>
+                  <h4 class="card-name">{{ card.data.location }} 天气</h4>
+                  <div class="weather-row">
+                    <span class="wh-temp">{{ card.data.tempMax }}°</span>
+                    <span class="wh-text">{{ card.data.textDay }}</span>
+                  </div>
+                  <div class="weather-grid">
+                    <span>💧 {{ card.data.humidity }}%</span>
+                    <span>🌬️ {{ card.data.windDirDay }}{{ card.data.windScaleDay }}级</span>
+                  </div>
+                </div>
+
+                <!-- 门票购买卡片 -->
+                <div v-else-if="card.type === 'ticket'" class="info-card">
+                  <div class="card-badge">🎫</div>
+                  <h4 class="card-name">{{ card.data.name }}</h4>
+                  <div class="card-tags" v-if="card.data.tags?.length">
+                    <span v-for="tag in card.data.tags" :key="tag" class="tag-seal">{{ tag }}</span>
+                  </div>
+                  <div class="card-meta">
+                    <span v-if="card.data.price">💰 {{ card.data.price }}</span>
+                    <span v-if="card.data.location">📍 {{ card.data.location }}</span>
                   </div>
                 </div>
               </div>
@@ -166,13 +226,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   ChatDotRound, ForkSpoon, House, Present, Sunny, Service, Plus, ChatLineSquare
 } from '@element-plus/icons-vue'
-import { sendChatMessage, createSession, getSessionMessages } from '@/api'
+import { sendChatMessage, createSession, getSessionMessages, getTodayWeather } from '@/api'
 
 const router = useRouter()
 const route = useRoute()
@@ -182,6 +242,11 @@ const isTyping = ref(false)
 const scrollAreaRef = ref(null)
 const messagesRef = ref(null)
 const currentSessionId = ref(null)
+const weatherNow = ref(null)
+const weatherLoaded = ref(false)
+const weatherQueryTip = computed(() => {
+  return weatherNow.value ? `洛阳今天天气怎么样` : ''
+})
 
 // 快捷操作
 const quickActions = [
@@ -195,11 +260,10 @@ const quickActions = [
 
 // 热门问题
 const hotQuestions = [
-  { id: 1, text: '龙门石窟怎么去？' },
-  { id: 2, text: '洛阳水席有什么特色？' },
-  { id: 3, text: '白马寺的历史背景？' },
-  { id: 4, text: '洛阳牡丹花会什么时候？' },
-  { id: 5, text: '老城有什么好吃的？' }
+  { id: 1, text: '龙门石窟有什么景点？' },
+  { id: 2, text: '洛阳有哪些特色美食推荐？' },
+  { id: 3, text: '洛阳牡丹花会什么时候？' },
+  { id: 4, text: '老君山的门票多少钱？' }
 ]
 
 // 创建新会话
@@ -222,6 +286,7 @@ async function loadSessionMessages(sessionId) {
       messages.value = (res.data || []).map(m => ({
         role: m.role,
         content: m.content,
+        cards: m.cards || null,
         card: m.card || null
       }))
     }
@@ -251,7 +316,7 @@ const sendMessage = async (text) => {
   scrollToBottom()
 
   // 创建AI消息占位，通过数组索引读写保证Vue响应式
-  messages.value.push({ role: 'assistant', content: '', card: null, _full: '' })
+  messages.value.push({ role: 'assistant', content: '', cards: null, _full: '' })
   const msgIdx = messages.value.length - 1
 
   let hasCard = false
@@ -293,8 +358,8 @@ const sendMessage = async (text) => {
           m._full += data.content
           if (!typingTimer) startTyping()
         }
-        if (data.card && !hasCard) {
-          m.card = data.card
+        if (data.cards && !hasCard) {
+          m.cards = data.cards
           hasCard = true
         }
       },
@@ -340,8 +405,20 @@ const scrollToBottom = () => {
 }
 
 // 渲染消息
+import { marked } from 'marked'
+
+// 配置 marked 选项
+marked.setOptions({
+  breaks: true,      // 将 \n 转换为 <br>
+  gfm: true,         // 启用 GitHub 风格 Markdown
+})
+
 const renderMessage = (content) => {
-  return content
+  if (!content) return ''
+  // 将内容渲染为 HTML，清除潜在的 XSS 风险
+  const html = marked.parse(content)
+  // 移除可能的代码块包裹标记
+  return html
 }
 
 // 花瓣样式
@@ -367,7 +444,22 @@ watch(messages, () => {
   scrollToBottom()
 }, { deep: true })
 
+// 加载今日天气
+async function loadWeather() {
+  try {
+    const res = await getTodayWeather('洛阳')
+    if (res.code === 200 && res.data) {
+      weatherNow.value = res.data
+    }
+  } catch (e) {
+    // 静默失败，不影响页面
+  } finally {
+    weatherLoaded.value = true
+  }
+}
+
 onMounted(async () => {
+  loadWeather()
   // 从 URL 参数加载指定会话
   const sessionId = route.query.session
   if (sessionId) {
@@ -437,11 +529,108 @@ onMounted(async () => {
   }
 }
 
+// 顶部栏右侧（天气小笺 + 操作按钮）
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+// 天气小笺 — 顶栏紧凑版
+.weather-mini {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 10px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--silk-gold) 0%, rgba(200,164,92,0.08) 100%);
+  border: 1px solid rgba(200,164,92,0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+
+  &:hover {
+    border-color: var(--gold);
+    box-shadow: 0 2px 8px rgba(200,164,92,0.15);
+  }
+
+  .wm-temp {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--palace-red);
+    letter-spacing: -0.5px;
+  }
+
+  .wm-text {
+    font-size: 12px;
+    color: var(--ink-light);
+  }
+
+  .wm-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--gold);
+    opacity: 0.4;
+  }
+}
+
+// 欢迎页天气 — 独立展示版
+.welcome-weather {
+  padding: 10px 20px 0;
+
+  .ww-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 16px 6px 14px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(200,164,92,0.08) 0%, rgba(200,164,92,0.03) 100%);
+    border: 1px solid rgba(200,164,92,0.12);
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--gold);
+      background: linear-gradient(135deg, rgba(200,164,92,0.12) 0%, rgba(200,164,92,0.05) 100%);
+    }
+  }
+
+  .ww-temp {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--palace-red);
+    letter-spacing: -1px;
+  }
+
+  .ww-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+
+    .ww-city {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    .ww-desc {
+      font-size: 11px;
+      color: var(--ink-light);
+    }
+  }
+
+  .ww-wind {
+    font-size: 11px;
+    color: var(--ink-light);
+    opacity: 0.6;
+  }
+}
+
 // ============ 可滚动区域 ============
 .scroll-area {
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
 
   &::-webkit-scrollbar { width: 4px; }
   &::-webkit-scrollbar-thumb { background: var(--gold-light); border-radius: 2px; }
@@ -786,10 +975,136 @@ onMounted(async () => {
   }
 }
 
-// 消息卡片
-.message-card {
-  margin-top: 8px;
-  width: 100%;
+// Markdown 渲染样式（助手消息内）
+.message-text.assistant {
+  // 段落
+  p { margin-bottom: 8px; &:last-child { margin-bottom: 0; } }
+
+  // 加粗
+  strong { color: var(--palace-red); font-weight: 600; }
+
+  // 列表
+  ul, ol {
+    padding-left: 20px;
+    margin: 6px 0;
+    li { margin-bottom: 4px; }
+  }
+
+  // 行内代码
+  code {
+    background: rgba(200,164,92,0.12);
+    color: var(--palace-red);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+  }
+
+  // 标题
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    color: var(--palace-red);
+    margin: 10px 0 6px;
+    letter-spacing: 1px;
+  }
+  h1 { font-size: 20px; }
+  h2 { font-size: 18px; }
+  h3 { font-size: 16px; }
+
+  // 链接
+  a {
+    color: var(--palace-red);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-color: var(--gold);
+  }
+
+  // 分隔线
+  hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 12px 0;
+    opacity: 0.3;
+  }
+
+  // 引用
+  blockquote {
+    border-left: 3px solid var(--gold);
+    padding: 6px 12px;
+    margin: 8px 0;
+    background: rgba(200,164,92,0.06);
+    border-radius: 0 6px 6px 0;
+    color: var(--ink-light);
+    font-style: italic;
+  }
+
+  // 代码块
+  pre {
+    background: rgba(0,0,0,0.04);
+    border: 1px solid rgba(200,164,92,0.15);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin: 8px 0;
+    overflow-x: auto;
+
+    code {
+      background: transparent;
+      padding: 0;
+      font-size: 13px;
+      color: var(--ink);
+    }
+  }
+
+  // 表格
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 8px 0;
+    font-size: 14px;
+
+    th, td {
+      border: 1px solid var(--gold-light);
+      padding: 6px 10px;
+      text-align: left;
+    }
+
+    th {
+      background: var(--palace-red);
+      color: #fff;
+      font-weight: 500;
+    }
+
+    tr:nth-child(even) td {
+      background: rgba(245,240,233,0.5);
+    }
+  }
+}
+
+// 消息卡片 - 水平滚动列表
+.cards-carousel {
+  display: grid;
+  grid-auto-columns: 220px;
+  grid-auto-flow: column;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 8px 0 12px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar { height: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background: var(--gold);
+    border-radius: 3px;
+  }
+}
+
+.carousel-item {
+  display: flex;
+  scroll-snap-align: start;
+  min-width: 0;
 }
 
 .info-card {
@@ -798,59 +1113,50 @@ onMounted(async () => {
   overflow: hidden;
   border: 1px solid var(--gold-light);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  max-width: 380px;
+  padding: 14px 14px 16px;
+  position: relative;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 
-  .card-image-wrap {
-    position: relative;
-    height: 180px;
-    overflow: hidden;
-    margin: 8px;
-    border-radius: 6px;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.08);
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .img-frame {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      border-color: var(--gold);
-      border-style: solid;
-      opacity: 0.4;
-
-      &.tl { top: 4px; left: 4px; border-width: 2px 0 0 2px; }
-      &.tr { top: 4px; right: 4px; border-width: 2px 2px 0 0; }
-      &.bl { bottom: 4px; left: 4px; border-width: 0 0 2px 2px; }
-      &.br { bottom: 4px; right: 4px; border-width: 0 2px 2px 0; }
-    }
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--palace-red), var(--gold), var(--palace-red));
+    opacity: 0.6;
   }
 
-  .card-body {
-    padding: 14px 16px 18px;
+  // 图标角标
+  .card-badge {
+    font-size: 18px;
+    line-height: 1;
+    margin-bottom: 2px;
   }
 
   .card-name {
     font-family: var(--font-body);
-    font-size: 17px;
+    font-size: 15px;
     font-weight: 600;
     color: var(--ink);
-    margin-bottom: 8px;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .card-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 10px;
+    gap: 4px;
   }
 
   .tag-seal {
     display: inline-block;
-    padding: 2px 10px;
+    padding: 1px 8px;
     border: 1px solid var(--gold);
     color: var(--palace-red);
     border-radius: 3px;
@@ -859,19 +1165,56 @@ onMounted(async () => {
   }
 
   .card-desc {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--ink-light);
-    line-height: 1.6;
-    margin-bottom: 12px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .card-meta {
     display: flex;
-    gap: 12px;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--ink-light);
+    padding-top: 8px;
+    margin-top: auto;
+    border-top: 1px solid rgba(200, 164, 92, 0.15);
+  }
+}
+
+// 天气卡片 - 紧凑版
+.info-card.weather {
+  background: linear-gradient(135deg, var(--silk-gold) 0%, #fff 100%);
+
+  .weather-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 6px;
+
+    .wh-temp {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--palace-red);
+      line-height: 1;
+    }
+
+    .wh-text {
+      font-size: 13px;
+      color: var(--ink-light);
+    }
+  }
+
+  .weather-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
     font-size: 12px;
     color: var(--ink-light);
-    padding-top: 10px;
-    border-top: 1px solid rgba(200, 164, 92, 0.2);
   }
 }
 

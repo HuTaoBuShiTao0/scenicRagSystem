@@ -16,8 +16,11 @@ public class ChatResponse {
     /** 文本内容（流式返回时逐段累加） */
     private String content;
 
-    /** 卡片数据（非流式返回时携带） */
+    /** 卡片数据（单条，兼容旧版） */
     private CardData card;
+
+    /** 多条卡片数据（按相关性排序，流式结束后统一返回） */
+    private List<CardData> cards;
 
     /** 意图类型 */
     private String intentType;

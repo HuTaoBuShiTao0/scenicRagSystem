@@ -197,6 +197,33 @@ public class ChromaVectorService {
         }
     }
 
+    /**
+     * 按 ID 列表删除向量文档
+     * @param collectionName 集合名（不含前缀）
+     * @param ids 要删除的文档 ID 列表
+     */
+    public void deleteDocuments(String collectionName, List<String> ids) {
+        if (ids == null || ids.isEmpty()) return;
+        String colId = getOrCreateCollection(collectionName);
+        if (colId == null) return;
+
+        try {
+            ObjectNode body = objectMapper.createObjectNode();
+            ArrayNode idArray = body.putArray("ids");
+            for (String id : ids) idArray.add(id);
+
+            String url = colUrl() + "/" + colId + "/delete";
+            String resp = httpPost(url, body.toString());
+            if (resp != null) {
+                log.info("Deleted {} docs from {}: {}", ids.size(), collectionName, ids);
+            } else {
+                log.warn("Delete from {} returned null for ids: {}", collectionName, ids);
+            }
+        } catch (Exception e) {
+            log.warn("Delete documents from {} failed: {}", collectionName, e.getMessage());
+        }
+    }
+
     public void deleteCollection(String name) {
         try {
             String id = getOrCreateCollection(name);

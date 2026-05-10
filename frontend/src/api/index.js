@@ -162,6 +162,66 @@ export function updateUserRole(id, role) {
   return request.put(`/admin/users/${id}/role`, { role })
 }
 
+// ============= 提示词管理 =============
+
+/**
+ * 获取所有提示词
+ */
+export function getPromptList() {
+  return request.get('/admin/prompts')
+}
+
+/**
+ * 根据ID获取提示词
+ */
+export function getPromptById(id) {
+  return request.get(`/admin/prompts/${id}`)
+}
+
+/**
+ * 根据类型获取提示词
+ */
+export function getPromptByType(type) {
+  return request.get(`/admin/prompts/type/${type}`)
+}
+
+/**
+ * 创建提示词
+ */
+export function createPrompt(data) {
+  return request.post('/admin/prompts', data)
+}
+
+/**
+ * 更新提示词
+ */
+export function updatePrompt(id, data) {
+  return request.put(`/admin/prompts/${id}`, data)
+}
+
+/**
+ * 快捷更新提示词内容（仅修改 content，清缓存）
+ */
+export function updatePromptContent(id, content) {
+  return request.put(`/admin/prompts/${id}/content`, { content })
+}
+
+/**
+ * 删除提示词
+ */
+export function deletePrompt(id) {
+  return request.delete(`/admin/prompts/${id}`)
+}
+
+// ============= 天气查询 =============
+
+/**
+ * 获取今日天气（用于前端组件展示）
+ */
+export function getTodayWeather(location = '洛阳') {
+  return request.get('/weather/today', { params: { location } })
+}
+
 // ============= 文件上传 =============
 
 /**
